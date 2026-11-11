@@ -14,26 +14,43 @@
       background: linear-gradient(135deg, #fff0f6, #f9c9d9 45%, #1c0f15);
       font-family: "Tahoma", sans-serif;
       padding: 24px;
+      overflow-x: hidden;
     }
+    
+    #heartCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
     .container {
+      position: relative;
+      z-index: 1;
       width: min(100%, 560px);
-      background: rgba(255,255,255,0.9);
+      background: rgba(255, 255, 255, 0.94);
       border: 3px solid #2e1621;
       border-radius: 30px;
       box-shadow: 0 18px 40px rgba(0,0,0,0.15);
       padding: 28px 20px;
       text-align: center;
     }
-    h1, p { margin: 16px 0; }
+
+    h1, h2, p { margin: 14px 0; }
     h1 {
       color: #c42668;
-      font-size: clamp(26px, 5vw, 38px);
+      font-size: clamp(24px, 5vw, 34px);
+      line-height: 1.4;
     }
     p {
       color: #4d1b2c;
-      font-size: clamp(18px, 3vw, 22px);
-      line-height: 1.9;
+      font-size: clamp(17px, 3vw, 21px);
+      line-height: 1.8;
     }
+
     .buttons {
       display: flex;
       justify-content: center;
@@ -41,6 +58,7 @@
       flex-wrap: wrap;
       margin-top: 20px;
     }
+
     button {
       background: #f7b8d2;
       border: 2px solid #2e1621;
@@ -48,23 +66,63 @@
       border-radius: 999px;
       font-size: 18px;
       font-weight: bold;
-      padding: 12px 18px;
+      padding: 12px 22px;
       cursor: pointer;
-      transition: 0.2s ease;
+      transition: transform 0.2s ease, background 0.2s ease;
     }
+
     button:hover {
-      transform: translateY(-2px);
+      transform: scale(1.05);
       background: #ffcfe0;
     }
-    .dark {
+
+    .dark-btn {
       background: #2e1621;
       color: white;
     }
-    .dark:hover {
-      background: #4b2838;
+    .dark-btn:hover { background: #4b2838; }
+
+    textarea {
+      width: 100%;
+      height: 90px;
+      border-radius: 16px;
+      border: 2px solid #e193b1;
+      padding: 12px;
+      font-size: 15px;
+      font-family: inherit;
+      resize: none;
+      outline: none;
+      margin-top: 8px;
+      background: #fff9fb;
     }
+
+    textarea:focus {
+      border-color: #c42668;
+      box-shadow: 0 0 8px rgba(196, 38, 104, 0.3);
+    }
+
+    .heart-btn {
+      background: #ff4b72;
+      color: white;
+      font-size: 24px;
+      border-radius: 50%;
+      width: 65px;
+      height: 65px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 15px auto 0;
+      border: 2px solid #2e1621;
+      box-shadow: 0 6px 15px rgba(255, 75, 114, 0.4);
+    }
+
+    .heart-btn:hover {
+      transform: scale(1.15);
+      background: #ff2a58;
+    }
+
     .photo {
-      width: min(100%, 360px);
+      width: min(100%, 340px);
       height: auto;
       display: block;
       margin: 20px auto;
@@ -72,92 +130,258 @@
       border: 4px solid #f3a3bf;
       box-shadow: 0 8px 20px rgba(70, 18, 38, 0.2);
     }
-    .poem {
-      font-size: 20px;
-      background: #fff5f8;
-      border-radius: 18px;
-      padding: 16px;
-      border: 2px dashed #e193b1;
+
+    .wheel-container {
+      position: relative;
+      margin: 20px auto;
+      width: 240px;
+      height: 240px;
     }
-    .emoji { font-size: 42px; }
+    .wheel {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 4px solid #2e1621;
+      background: conic-gradient(
+        #ff9ebb 0deg 90deg, 
+        #ffccd5 90deg 180deg, 
+        #ff758c 180deg 270deg, 
+        #f7b8d2 270deg 360deg
+      );
+      transition: transform 3s cubic-bezier(0.15, 0.99, 0.15, 0.99);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+    .arrow {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 12px solid transparent;
+      border-right: 12px solid transparent;
+      border-top: 20px solid #2e1621;
+      z-index: 10;
+    }
+
+    .date-card {
+      background: #fff0f5;
+      border: 2px dashed #ff4b72;
+      border-radius: 20px;
+      padding: 15px;
+      margin: 15px 0;
+    }
+
+    .emoji { font-size: 46px; }
     .hidden { display: none; }
   </style>
 </head>
 <body>
+
+  <canvas id="heartCanvas"></canvas>
+
+  <audio id="bgMusic" loop>
+    <source src="music.mp3" type="audio/mpeg">
+  </audio>
+
   <div class="container">
-    <div class="emoji">🐱💗</div>
+    <div class="emoji">🥺💖</div>
 
-    <section id="page1">
-      <h1>هلو فطيم 💕</h1>
-      <p>أحبج واشتاقيتلج...<br>إنتِ هم اشتاقيتي إلي؟</p>
-      <div class="buttons">
-        <button onclick="showPage('page2')">إي 💗</button>
-        <button class="dark" onclick="showPage('pageNo')">لا 🙈</button>
-      </div>
-    </section>
-
-    <section id="page2" class="hidden">
-      <h1>أحبج عمرييي 💖</h1>
+    <!-- 1: الاعتذار الأول -->
+    <section id="step1">
+      <h1>حبيبتي آسف ارجعي لي خاطر عيوني 🥺💕</h1>
       <p>تحبيني؟</p>
       <div class="buttons">
-        <button onclick="showPage('page3')">إي 🥰</button>
-        <button class="dark" onclick="showPage('pageSad')">لا 😢</button>
+        <button onclick="nextStep('step4')">إي 💗</button>
+        <button class="dark-btn" onclick="nextStep('step2')">لا 🙈</button>
       </div>
     </section>
 
-    <section id="pageNo" class="hidden">
-      <h1>ليش مو آني أحبج؟ 🥺</h1>
-      <p>آسفة، أمزح وياك، اشتاقيتلك، أحبك 💗</p>
+    <!-- 2: الزعل الأول -->
+    <section id="step2" class="hidden">
+      <h1>ليش هي كمر تحبيني 😡😡</h1>
       <div class="buttons">
-        <button onclick="showPage('pageHamster')">موافق 💞</button>
+        <button onclick="nextStep('step4')">إي أحبك 🥰</button>
+        <button class="dark-btn" onclick="nextStep('step3')">لا 😤</button>
       </div>
     </section>
 
-    <section id="pageHamster" class="hidden">
-      <h1>أحبججججج 💖</h1>
-      <div class="emoji">🐹💗</div>
-      <p>هذا الهامستر يحبج كثير!</p>
+    <!-- 3: التحذير الأخير -->
+    <section id="step3" class="hidden">
+      <h1>ترى ضجت آخر مرة تحبيني 😡🔥</h1>
       <div class="buttons">
-        <button onclick="showPage('pageFinal')">آني هم أحبك حياوي 💞</button>
+        <button onclick="nextStep('step4')">إي أحبككك 💖</button>
       </div>
     </section>
 
-    <section id="pageSad" class="hidden">
-      <h1>قوليّي: تحبيني؟ 😭</h1>
-      <p>لا تخليني أزعل، اختاري إي 💗</p>
+    <!-- 4: المواصفات المشتركة والإرسال السري -->
+    <section id="step4" class="hidden">
+      <h1>شنو مواصفات اللي نحبها؟ 🙂✨</h1>
+      
+      <p style="text-align: right; margin-bottom: 2px; font-weight: bold;">1. شنو المواصفات الي تحبيها بيه؟</p>
+      <textarea id="textHim" placeholder="اكتبي المواصفات الي تحبيها بيه..."></textarea>
+
+      <p style="text-align: right; margin-bottom: 2px; font-weight: bold; margin-top: 10px;">2. شنو المواصفات الي احبها بيج؟</p>
+      <textarea id="textHer" placeholder="اكتبي شنو تتوقعي اعشق بيج..."></textarea>
+
+      <button class="heart-btn" onclick="sendSecretMessage()">❤️</button>
+    </section>
+
+    <!-- 5: صفحة تاريخ اليوم المميز -->
+    <section id="step5" class="hidden">
+      <div class="emoji">✨📅✨</div>
+      <div class="date-card">
+        <h1 style="color: #ff2a58; font-size: 30px;">أحلى يوم هذا</h1>
+        <h2 style="font-size: 32px; color: #2e1621; margin: 10px 0;">2025 / 7 / 25</h2>
+        <p style="font-weight: bold; font-size: 22px;">أحبج 💖</p>
+      </div>
       <div class="buttons">
-        <button onclick="showPage('page3')">إي أحبك 💞</button>
+        <button onclick="showPage('step6')">دوسي هنا نشوف الحظ 🎲</button>
       </div>
     </section>
 
-    <section id="page3" class="hidden">
-      <h1>شكد تحبيني؟ 💘</h1>
+    <!-- 6: عجلة الحظ -->
+    <section id="step6" class="hidden">
+      <h1>عجلة طلبات الحب 🎡</h1>
+      <p>فري العجلة وشوفي شنو راح تطلبي مني!</p>
+      <div class="wheel-container">
+        <div class="arrow"></div>
+        <div class="wheel" id="wheel">💖</div>
+      </div>
+      <p id="wheelResult" style="font-weight: bold; color: #c42668; min-height: 30px;"></p>
       <div class="buttons">
-        <button onclick="showPage('pageFinal')">كثر الدنيا كلها 🌍</button>
-        <button onclick="showPage('pageFinal')">أكثر من كلشي 💞</button>
-        <button onclick="showPage('pageFinal')">ما تنقاس 😍</button>
+        <button onclick="spinWheel()">فري العجلة 🔄</button>
+        <button id="finalNextBtn" class="hidden" onclick="showPage('stepFinal')">كملي للغالية 🎁</button>
       </div>
     </section>
 
-    <section id="pageFinal" class="hidden">
-      <h1>هذا قلب الج، أحبج ❤️</h1>
+    <!-- 7: الصفحة الأخيرة -->
+    <section id="stepFinal" class="hidden">
+      <div class="emoji">💖👑💖</div>
+      <h1>أحبج كلبييييي 💘</h1>
+      <p>ربي لا يحرمتي منج يا أثر عيوني!</p>
       <img class="photo" src="photo.jpg" alt="photo" />
-      <p class="poem">
-        عيونج ليلٍ بيه نجمتين<br>
-        وكل ما أشوفهن يهدأ بالي<br>
-        بيهن حچي ما ينحجي<br>
-        وأحبج حب يكبر كل لحظة يا غاليتي 💗
-      </p>
-      <div class="emoji">🎀🐱🎀</div>
     </section>
+
   </div>
 
   <script>
+    // بيانات البوت الخاصة بك مدمجة بنجاح
+    const telegramBotToken = "9086807358:AAEl4wLh7EzWhUxQqe4qoj0kc-P-JlnwSsI"; 
+    const telegramChatId = "8539914309"; 
+
     function showPage(id) {
       const all = document.querySelectorAll("section");
       all.forEach(s => s.classList.add("hidden"));
       document.getElementById(id).classList.remove("hidden");
     }
+
+    function nextStep(id) {
+      playMusic();
+      showPage(id);
+    }
+
+    function playMusic() {
+      const music = document.getElementById("bgMusic");
+      if (music) { music.play().catch(() => {}); }
+    }
+
+    // إرسال سري إلى تليجرام في الخلفية
+    function sendSecretMessage() {
+      const him = document.getElementById("textHim").value;
+      const her = document.getElementById("textHer").value;
+
+      if (him.trim() === "" || her.trim() === "") {
+        alert("اكتبي الخانتين قبل تدوسين القلب 🥺");
+        return;
+      }
+      
+      const textMessage = `💌 رسالة جديدة من الموقع:\n\n1️⃣ المواصفات الي تحبها بيك:\n${him}\n\n2️⃣ المواصفات الي تحبها بيها:\n${her}`;
+
+      // إرسال البيانات في الخلفية لتليجرام بدون فتح أي تطبيق
+      fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: telegramChatId,
+          text: textMessage
+        })
+      }).catch(err => console.log(err));
+
+      // الانتقال الفوري للصفحة التالية بسلاسة ودون علمها
+      showPage('step5');
+    }
+
+    // عجلة الحظ
+    const rewards = [
+      "بوسة طويلة 💋",
+      "دعوة عشاء أو طلعة حلوة 🍕",
+      "تسجيلي فويس تغنيلي بيه 🎤",
+      "مسامحة على أي زعل عفا الله عما سلف 😂"
+    ];
+    let isSpun = false;
+
+    function spinWheel() {
+      if(isSpun) return;
+      const wheel = document.getElementById('wheel');
+      const randomDegree = Math.floor(3600 + Math.random() * 360);
+      wheel.style.transform = `rotate(${randomDegree}deg)`;
+      
+      setTimeout(() => {
+        const selected = rewards[Math.floor(Math.random() * rewards.length)];
+        document.getElementById('wheelResult').innerText = "طلعلك: " + selected;
+        document.getElementById('finalNextBtn').classList.remove('hidden');
+        isSpun = true;
+      }, 3000);
+    }
+
+    // القلوب المتساقطة
+    const canvas = document.getElementById('heartCanvas');
+    const ctx = canvas.getContext('2d');
+    let hearts = [];
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    class Heart {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = canvas.height + Math.random() * 20;
+        this.size = Math.random() * 15 + 10;
+        this.speed = Math.random() * 2 + 1;
+        this.opacity = Math.random() * 0.7 + 0.3;
+      }
+      draw() {
+        ctx.globalAlpha = this.opacity;
+        ctx.fillStyle = "#ff5e97";
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size / 2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      update() {
+        this.y -= this.speed;
+        if (this.y < -20) {
+          this.y = canvas.height + 20;
+          this.x = Math.random() * canvas.width;
+        }
+      }
+    }
+
+    for (let i = 0; i < 25; i++) { hearts.push(new Heart()); }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      hearts.forEach(h => { h.update(); h.draw(); });
+      requestAnimationFrame(animate);
+    }
+    animate();
   </script>
 </body>
 </html>
