@@ -131,6 +131,20 @@
       box-shadow: 0 8px 20px rgba(70, 18, 38, 0.2);
     }
 
+    .gift-box {
+      background: #fff0f5;
+      border: 2px dashed #ff2a58;
+      border-radius: 20px;
+      padding: 20px;
+      margin-top: 15px;
+      animation: fadeIn 0.8s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     .wheel-container {
       position: relative;
       margin: 20px auto;
@@ -258,18 +272,29 @@
       </div>
     </section>
 
-    <!-- 7: الصفحة الأخيرة -->
+    <!-- 7: الصفحة الأخيرة والهدية -->
     <section id="stepFinal" class="hidden">
       <div class="emoji">💖👑💖</div>
       <h1>أحبج كلبييييي 💘</h1>
-      <p>ربي لا يحرمتي منج يا أثر عيوني!</p>
-      <img class="photo" src="photo.jpg" alt="photo" />
+      <p>وصلنا للنهاية يا أثر عيوني... حضري حالج لـ هديتج!</p>
+      
+      <div class="buttons" id="giftButtonContainer">
+        <button style="font-size: 20px; padding: 15px 30px; background: #ff4b72; color: white;" onclick="openGift()">دوسي هنا وشوفي هديتج 🎁✨</button>
+      </div>
+
+      <!-- المعايدة والهدية تظهر بعد الضغط على الزر -->
+      <div id="giftContent" class="gift-box hidden">
+        <h2 style="color: #c42668; font-size: 24px;">كل عام وإنني الحب كله ❤️</h2>
+        <p style="font-size: 18px; line-height: 1.8; color: #333; text-align: justify; padding: 0 10px;">
+          يا أجمل وأحلى صدفة بحياتي، يا أثر عيوني وكلبي.. مو بس بأيام المعايدات، أنتِ الحب بذاته لكل يوم وكل دقيقة أعيد بيها وأني وياج. ربي لا يحرمني من ضحكتج ولا من وجودج بحياتي، أحبج هوايييي 💖🌹
+        </p>
+        <img class="photo" src="photo.jpg" alt="photo" />
+      </div>
     </section>
 
   </div>
 
   <script>
-    // بيانات البوت الخاصة بك مدمجة بنجاح
     const telegramBotToken = "9086807358:AAEl4wLh7EzWhUxQqe4qoj0kc-P-JlnwSsI"; 
     const telegramChatId = "8539914309"; 
 
@@ -289,7 +314,6 @@
       if (music) { music.play().catch(() => {}); }
     }
 
-    // إرسال سري إلى تليجرام في الخلفية
     function sendSecretMessage() {
       const him = document.getElementById("textHim").value;
       const her = document.getElementById("textHer").value;
@@ -301,7 +325,6 @@
       
       const textMessage = `💌 رسالة جديدة من الموقع:\n\n1️⃣ المواصفات الي تحبها بيك:\n${him}\n\n2️⃣ المواصفات الي تحبها بيها:\n${her}`;
 
-      // إرسال البيانات في الخلفية لتليجرام بدون فتح أي تطبيق
       fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -311,8 +334,12 @@
         })
       }).catch(err => console.log(err));
 
-      // الانتقال الفوري للصفحة التالية بسلاسة ودون علمها
       showPage('step5');
+    }
+
+    function openGift() {
+      document.getElementById('giftButtonContainer').classList.add('hidden');
+      document.getElementById('giftContent').classList.remove('hidden');
     }
 
     // عجلة الحظ
